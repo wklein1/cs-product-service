@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from decouple import config
 from main import app
 
-def test_get_product_endpoint_returns_products_for_user():
+def test_get_products_endpoint_returns_products_for_user():
     client = TestClient(app)
     TEST_USER_ID = config("TEST_USER_ID")
     response = client.get(f"/products/{TEST_USER_ID}")
@@ -15,3 +15,18 @@ def test_get_product_endpoint_returns_products_for_user():
     "description":"",
     "price":0.0
 }
+
+def test_post_products_endpoint():
+    client = TestClient(app)
+    TEST_USER_ID = config("TEST_USER_ID")
+    response = client.post(f"/products",data={
+        {
+            "ownerId":TEST_USER_ID,
+            "name":"test new product",
+            "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
+            "description":"new product from post request",
+            "price":0.0
+        }
+    })
+    assert response.status_code == 200
+    assert response.json()=={"message":"success"}
