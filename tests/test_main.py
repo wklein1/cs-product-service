@@ -19,14 +19,13 @@ def test_get_products_endpoint_returns_products_for_user():
 def test_post_products_endpoint():
     client = TestClient(app)
     TEST_USER_ID = config("TEST_USER_ID")
-    response = client.post(f"/products",data={
-        {
-            "ownerId":TEST_USER_ID,
-            "name":"test new product",
-            "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
-            "description":"new product from post request",
-            "price":0.0
-        }
-    })
-    assert response.status_code == 200
-    assert response.json()=={"message":"success"}
+    test_product = {
+        "ownerId":TEST_USER_ID,
+        "name":"test new product",
+        "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
+        "description":"new product from post request",
+        "price":0.0
+    }
+    response = client.post("/products",json=test_product)
+    assert response.status_code == 201
+    assert test_product.items() <= response.json().items()
