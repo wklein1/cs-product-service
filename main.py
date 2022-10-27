@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException, Header
 from deta import Deta, Base
 from fastapi.middleware.cors import CORSMiddleware
 from decouple import config
@@ -51,3 +51,17 @@ async def post_product_by_user(product: ProductsModel):
     except Exception as ex:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=ex)
     return new_product
+
+
+@app.delete(
+    "/products/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Deletes a product by its id, if the user is the owner.",
+)
+async def delete_product_by_id(product_id, user_id: str = Header(alias="userId")):
+    product_to_delete = productsDB.get(product_id)
+    if product_to_delete["owner_id"] == user_id:
+        productsDB.delete(product_id)
+        return
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
