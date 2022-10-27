@@ -28,7 +28,7 @@ def test_post_products_endpoint():
     }
     response = client.post("/products",json=test_product)
     assert response.status_code == 201
-    assert test_product.items() <= response.json().items
+    assert test_product.items() <= response.json().items()
 
 def test_delete_product_endpoint():
     client = TestClient(app)
