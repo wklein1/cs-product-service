@@ -86,3 +86,32 @@ async def put_product_by_user(product: product_models.ProductRequestModel, user_
         except Exception as ex:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ex))
         return new_or_updated_product
+
+
+@app.patch(
+    "/products/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_description="Returns no data.",
+    responses={
+        403 :{
+            "model": error_models.HTTPErrorModel,
+            "description": "Error raised if user tries to update a product not owned."
+            },
+        404 :{
+                "model": error_models.HTTPErrorModel,
+                "description": "Error raised if the product to update cant be found."
+        }},
+    description="Updates product with values specified in request body.",
+)
+async def patch_product_by_id(product: product_models.ProductModel, product_id, user_id: str = Header(alias="userId")):
+    product_to_update = productsDB.get(product_id)
+    if(product_to_update == None):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+    elif product_to_update["owner_id"] != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Modifications are only allowed by the owner of the product.")
+    else:
+        try:
+            updated_product = productsDB.update(product.dict(),product_id)
+        except Exception as ex:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ex))
+        
