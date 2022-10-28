@@ -104,7 +104,7 @@ async def delete_product_by_id(product_id, user_id: str = Header(alias="userId")
         productsDB.delete(product_id)
         return
     else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not allowed to delete a product not owned.")
 
 
 @app.put(

@@ -22,6 +22,29 @@ def test_delete_product_endpoint():
     assert del_response.status_code == 204
 
 
+def test_delete_product_endpoint_fails_for_not_owned_product():
+    #ARRANGE
+    client = TestClient(app)
+    TEST_USER_ID = config("TEST_USER_ID")
+    test_product = {
+        "ownerId":TEST_USER_ID,
+        "name":"test new product",
+        "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
+        "description":"new product from post request",
+        "price":0.0
+    }
+    post_response = client.post("/products",json=test_product, headers={"userId":TEST_USER_ID})
+    product_id = post_response.json()["productId"]
+    expected_error = {
+        "detail": "User is not allowed to delete a product not owned."
+    }
+    #ACT
+    del_response = client.delete(f"/products/{product_id}",headers={"userId":"different user id"})
+    #ASSERT
+    assert del_response.status_code == 403
+    assert del_response.json() == expected_error
+
+
 def test_get_products_endpoint_returns_products_for_user():
     #ARRANGE
     client = TestClient(app)
