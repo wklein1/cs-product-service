@@ -1,7 +1,7 @@
 from models.custom_base_model import CustomBaseModel
 from pydantic import Field
 
-class ProductsModel(CustomBaseModel):
+class ProductModel(CustomBaseModel):
     owner_id: str
     name: str
     description: str
@@ -11,10 +11,10 @@ class ProductsModel(CustomBaseModel):
     def __getitem__(self, item):
         return getattr(self, item)
 
-class ProductsResponseModel(ProductsModel):
+class ProductResponseModel(ProductModel):
     key: str = Field(alias="productId")
 
-class ProductsRequestModel(ProductsModel):
+class ProductRequestModel(ProductModel):
     key: str = Field(alias="productId")
    
    
