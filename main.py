@@ -92,6 +92,10 @@ async def post_product_by_user(product: product_models.ProductModel, user_id:str
 @app.delete(
     "/products/{product_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    responses={403 :{
+            "model": error_models.HTTPErrorModel,
+            "description": "Error raised if user tries to delete a product not owned."
+        }},
     description="Deletes a product by its id, if the user is the owner.",
 )
 async def delete_product_by_id(product_id, user_id: str = Header(alias="userId")):
