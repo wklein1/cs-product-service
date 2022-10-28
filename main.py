@@ -26,6 +26,19 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+@app.get("/products/{product_id}", response_model=product_models.ProductResponseModel)
+async def get_product_by_id(product_id, user_id:str = Header(alias="userId")):
+    try:
+        fetched_product = productsDB.get(product_id)
+    except Exception as ex:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ex))
+
+    if(fetched_product == None):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+    elif fetched_product["owner_id"] != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not allowed to get a product not owned.")
+    else:       
+        return fetched_product
 
 @app.get(
     "/products",
