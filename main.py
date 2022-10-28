@@ -71,9 +71,15 @@ async def get_product_by_id(product_id, user_id:str = Header(alias="userId")):
     status_code=status.HTTP_201_CREATED,
     response_model=product_models.ProductResponseModel,
     response_description="Returns created product with generated id.",
-    description="Create a new product for an user, specified by the ownerId value in request body.",
+    responses={403 :{
+            "model": error_models.HTTPErrorModel,
+            "description": "Error raised if user tries to create a product for a different owner."
+        }},
+    description="Create a new product for a user",
 )
-async def post_product_by_user(product: product_models.ProductModel):
+async def post_product_by_user(product: product_models.ProductModel, user_id:str = Header(alias="userId")):
+    if(product.dict()["owner_id"]!=user_id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Users are only allowed to create products for themselves.")
     try:
         new_product = product.dict()
         new_product["key"] = str(uuid.uuid1())

@@ -14,7 +14,7 @@ def test_delete_product_endpoint():
         "description":"new product from post request",
         "price":0.0
     }
-    post_response = client.post("/products",json=test_product)
+    post_response = client.post("/products",json=test_product, headers={"userId":TEST_USER_ID})
     product_id = post_response.json()["productId"]
     #ACT
     del_response = client.delete(f"/products/{product_id}",headers={"userId":TEST_USER_ID})
@@ -110,7 +110,7 @@ def test_post_products_endpoint():
         "price":0.0
     }
     #ACT
-    response = client.post("/products",json=test_product)
+    response = client.post("/products",json=test_product, headers={"userId":TEST_USER_ID})
     #ASSERT
     response_product = response.json()
     assert response.status_code == 201
