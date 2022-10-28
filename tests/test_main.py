@@ -242,4 +242,28 @@ def test_patch_endpoint_fails_updating_not_owned_product():
     #ASSERT
     assert patch_response.status_code == 403
     assert patch_response.json() == expected_error
+
+
+def test_patch_endpoint_fails_updating_not_existing_product():
+    #ARRANGE
+    client = TestClient(app)
+    TEST_USER_ID = config("TEST_USER_ID")
+    random_test_id = str(uuid.uuid1())
+    updated_test_product = {
+        "productId":random_test_id,
+        "ownerId":TEST_USER_ID,
+        "name":"test patched product",
+        "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
+        "description":"updated product from patch request",
+        "price":0.0
+    }
+    expected_error = {
+        "detail": "Product does not exist."
+    }
+    #ACT
+    patch_response = client.patch("/products",json=updated_test_product, headers={"userId":"different user id"})
+    #ASSERT
+    assert patch_response.status_code == 404
+    assert patch_response.json() == expected_error
+    
     
