@@ -41,6 +41,26 @@ def test_get_products_endpoint_returns_products_for_user():
     assert expected_product in response.json()
 
 
+def test_get_single_product_endpoint_returns_product_for_user_by_id():
+    #ARRANGE
+    client = TestClient(app)
+    TEST_USER_ID = config("TEST_USER_ID")
+    expected_product = {
+        "productId":"29f6f518-53a8-11ed-a980-cd9f67f7363d",
+        "ownerId":TEST_USER_ID,
+        "name":"test product",
+        "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
+        "description":"",
+        "price":0.0
+    }
+    expected_product_id = expected_product['productId']
+    #ACT
+    response = client.get(f"/products/{expected_product_id}", headers={"userId":TEST_USER_ID})
+    #ASSERT
+    assert response.status_code == 200
+    assert response.json() == expected_product
+
+
 def test_post_products_endpoint():
     #ARRANGE
     client = TestClient(app)
