@@ -31,11 +31,11 @@ def test_get_products_endpoint_returns_products_for_user():
         "ownerId":TEST_USER_ID,
         "name":"test product",
         "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
-        "description":"",
+        "description":"test product for get method",
         "price":0.0
     }
     #ACT
-    response = client.get(f"/products/{TEST_USER_ID}")
+    response = client.get(f"/products",headers={"userId":TEST_USER_ID})
     #ASSERT
     assert response.status_code == 200
     assert expected_product in response.json()
