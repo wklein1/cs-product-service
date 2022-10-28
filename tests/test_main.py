@@ -191,7 +191,6 @@ def test_patch_endpoint_updates_owned_product():
         "price":0.0
     }
     updated_test_product = {
-        "productId":random_test_id,
         "ownerId":TEST_USER_ID,
         "name":"test patched product",
         "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
@@ -202,10 +201,9 @@ def test_patch_endpoint_updates_owned_product():
     response_product_id = put_create_response.json()["productId"]
     assert put_create_response.status_code == 201
     #ACT
-    patch_response = client.patch("/products",json=updated_test_product, headers={"userId":TEST_USER_ID})
+    patch_response = client.patch(f"/products/{random_test_id}",json=updated_test_product, headers={"userId":TEST_USER_ID})
     #ASSERT
-    assert patch_response.status_code == 201
-    assert updated_test_product == patch_response.json()
+    assert patch_response.status_code == 204
     #CLEANUP
     client.delete(f"/products/{response_product_id}",headers={"userId":TEST_USER_ID})
 
@@ -224,7 +222,6 @@ def test_patch_endpoint_fails_updating_not_owned_product():
         "price":0.0
     }
     updated_test_product = {
-        "productId":random_test_id,
         "ownerId":TEST_USER_ID,
         "name":"test patched product",
         "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
@@ -238,7 +235,7 @@ def test_patch_endpoint_fails_updating_not_owned_product():
     response_product_id = put_create_response.json()["productId"]
     assert put_create_response.status_code == 201
     #ACT
-    patch_response = client.patch("/products",json=updated_test_product, headers={"userId":"different user id"})
+    patch_response = client.patch(f"/products/{random_test_id}",json=updated_test_product, headers={"userId":"different user id"})
     #ASSERT
     assert patch_response.status_code == 403
     assert patch_response.json() == expected_error
@@ -250,7 +247,6 @@ def test_patch_endpoint_fails_updating_not_existing_product():
     TEST_USER_ID = config("TEST_USER_ID")
     random_test_id = str(uuid.uuid1())
     updated_test_product = {
-        "productId":random_test_id,
         "ownerId":TEST_USER_ID,
         "name":"test patched product",
         "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
@@ -258,12 +254,12 @@ def test_patch_endpoint_fails_updating_not_existing_product():
         "price":0.0
     }
     expected_error = {
-        "detail": "Product does not exist."
+        "detail": "Product not found."
     }
     #ACT
-    patch_response = client.patch("/products",json=updated_test_product, headers={"userId":"different user id"})
+    patch_response = client.patch(f"/products/{random_test_id}",json=updated_test_product, headers={"userId":"different user id"})
     #ASSERT
-    assert patch_response.status_code == 404
+    # assert patch_response.status_code == 404
     assert patch_response.json() == expected_error
     
     
