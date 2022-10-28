@@ -27,8 +27,13 @@ app.add_middleware(
 )
 
 
-@app.get("/products/{user_id}", response_model=list[product_models.ProductResponseModel])
-async def get_products_by_user(user_id):
+@app.get(
+    "/products",
+    response_model=list[product_models.ProductResponseModel],
+    response_description="Returns list with products",
+    description="Get all products belonging to a user.",    
+)
+async def get_products_for_user(user_id: str = Header(alias="userId")):
     return productsDB.fetch({"owner_id": user_id}).items
 
 
