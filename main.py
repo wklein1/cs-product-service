@@ -26,7 +26,32 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-@app.get("/products/{product_id}", response_model=product_models.ProductResponseModel)
+
+@app.get(
+    "/products",
+    response_model=list[product_models.ProductResponseModel],
+    response_description="Returns list with products",
+    description="Get all products belonging to a user.",    
+)
+async def get_products_for_user(user_id: str = Header(alias="userId")):
+    return productsDB.fetch({"owner_id": user_id}).items
+
+
+@app.get(
+    "/products/{product_id}", 
+    response_model=product_models.ProductResponseModel,
+    response_description="Returns product",
+    responses={
+        403 :{
+            "model": error_models.HTTPErrorModel,
+            "description": "Error raised if user tries to get a product owned by a different user."
+            },
+        404 :{
+                "model": error_models.HTTPErrorModel,
+                "description": "Error raised if the product cant be found."
+        }},
+    description="Get a product by its id, belonging to the user."
+)
 async def get_product_by_id(product_id, user_id:str = Header(alias="userId")):
     try:
         fetched_product = productsDB.get(product_id)
@@ -39,15 +64,6 @@ async def get_product_by_id(product_id, user_id:str = Header(alias="userId")):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not allowed to get a product not owned.")
     else:       
         return fetched_product
-
-@app.get(
-    "/products",
-    response_model=list[product_models.ProductResponseModel],
-    response_description="Returns list with products",
-    description="Get all products belonging to a user.",    
-)
-async def get_products_for_user(user_id: str = Header(alias="userId")):
-    return productsDB.fetch({"owner_id": user_id}).items
 
 
 @app.post(
