@@ -119,6 +119,27 @@ def test_post_products_endpoint():
     client.delete(f"/products/{response_product['productId']}",headers={"userId":TEST_USER_ID})
 
 
+def test_post_products_endpoint_fails_by_creating_not_owned_product():
+    #ARRANGE
+    client = TestClient(app)
+    TEST_USER_ID = config("TEST_USER_ID")
+    test_product = {
+        "ownerId":TEST_USER_ID,
+        "name":"test new product",
+        "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
+        "description":"new product from post request",
+        "price":0.0
+    }
+    expected_error = {
+        "detail": "Users are only allowed to create products for themselves."
+    }
+    #ACT
+    response = client.post("/products",json=test_product, headers={"userId":"different user id"})
+    #ASSERT
+    assert response.status_code == 403
+    assert response.json() == expected_error
+
+
 def test_put_endpoint_creates_not_existing_owned_product():
     #ARRANGE
     client = TestClient(app)
