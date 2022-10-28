@@ -175,3 +175,38 @@ def test_put_endpoint_fails_updating_existing_not_owned_product():
     assert put_update_response.json() == expected_error
     #CLEANUP
     client.delete(f"/products/{response_product_id}",headers={"userId":TEST_USER_ID})
+
+
+def test_patch_endpoint_updates_owned_product():
+    #ARRANGE
+    client = TestClient(app)
+    TEST_USER_ID = config("TEST_USER_ID")
+    random_test_id = str(uuid.uuid1())
+    test_product = {
+        "productId":random_test_id,
+        "ownerId":TEST_USER_ID,
+        "name":"test new product",
+        "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
+        "description":"new product from put request",
+        "price":0.0
+    }
+    updated_test_product = {
+        "productId":random_test_id,
+        "ownerId":TEST_USER_ID,
+        "name":"test patched product",
+        "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
+        "description":"updated product from patch request",
+        "price":0.0
+    }
+    put_create_response = client.put("/products",json=test_product, headers={"userId":TEST_USER_ID})
+    response_product_id = put_create_response.json()["productId"]
+    assert put_create_response.status_code == 201
+    #ACT
+    patch_response = client.patch("/products",json=updated_test_product, headers={"userId":TEST_USER_ID})
+    #ASSERT
+    assert patch_response.status_code == 201
+    assert updated_test_product == patch_response.json()
+    #CLEANUP
+    client.delete(f"/products/{response_product_id}",headers={"userId":TEST_USER_ID})
+
+    
