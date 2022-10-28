@@ -69,9 +69,32 @@ def test_get_single_product_endpoint_fails_for_not_existing_product():
         "detail": "Product not found."
     }
     #ACT
-    response = client.get(f"/products/not_existing_id", headers={"userId":TEST_USER_ID})
+    response = client.get("/products/not_existing_id", headers={"userId":TEST_USER_ID})
     #ASSERT
     assert response.status_code == 404
+    assert response.json() == expected_error
+
+
+def test_get_single_product_endpoint_fails_for_not_owned_product():
+    #ARRANGE
+    client = TestClient(app)
+    TEST_USER_ID = config("TEST_USER_ID")
+    expected_product = {
+        "productId":"29f6f518-53a8-11ed-a980-cd9f67f7363d",
+        "ownerId":TEST_USER_ID,
+        "name":"test product",
+        "componentIds":["546c08d7-539d-11ed-a980-cd9f67f7363d","546c08da-539d-11ed-a980-cd9f67f7363d"],
+        "description":"",
+        "price":0.0
+    }
+    expected_error = {
+        "detail": "User is not allowed to get a not owned product."
+    }
+    expected_product_id = expected_product['productId']
+    #ACT
+    response = client.get(f"/products/{expected_product_id}", headers={"userId":"different user id"})
+    #ASSERT
+    assert response.status_code == 403
     assert response.json() == expected_error
 
 
