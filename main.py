@@ -2,11 +2,7 @@ from fastapi import FastAPI, status, HTTPException, Header
 from deta import Deta, Base
 from fastapi.middleware.cors import CORSMiddleware
 from decouple import config
-from models.products_model import (
-    ProductsModel,
-    ProductsResponseModel,
-    ProductsRequestModel,
-)
+from models import product_models,error_models
 import uuid
 
 PROJECT_KEY = config("PROJECT_KEY")
@@ -31,7 +27,7 @@ app.add_middleware(
 )
 
 
-@app.get("/products/{user_id}", response_model=list[ProductsResponseModel])
+@app.get("/products/{user_id}", response_model=list[product_models.ProductResponseModel])
 async def get_products_by_user(user_id):
     return productsDB.fetch({"owner_id": user_id}).items
 
@@ -39,11 +35,11 @@ async def get_products_by_user(user_id):
 @app.post(
     "/products",
     status_code=status.HTTP_201_CREATED,
-    response_model=ProductsResponseModel,
+    response_model=product_models.ProductResponseModel,
     response_description="Returns created product with generated id.",
     description="Create a new product for an user, specified by the ownerId value in request body.",
 )
-async def post_product_by_user(product: ProductsModel):
+async def post_product_by_user(product: product_models.ProductModel):
     try:
         new_product = product.dict()
         new_product["key"] = str(uuid.uuid1())
@@ -65,3 +61,28 @@ async def delete_product_by_id(product_id, user_id: str = Header(alias="userId")
         return
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+
+@app.put(
+    "/products",
+    status_code=status.HTTP_201_CREATED,
+    response_model=product_models.ProductResponseModel,
+    response_description="Returns created or updated product.",
+    responses={403 :{
+            "model": error_models.HTTPErrorModel,
+            "description": "Error raised if user tries to create or update a product not owned."
+        }},
+    description="Creates a new product if not existing, else updates product with values in request body.",
+)
+async def put_product_by_user(product: product_models.ProductRequestModel, user_id: str = Header(alias="userId")):
+    product_to_update = productsDB.get(product.dict()["key"])
+    if product_to_update and product_to_update["owner_id"] != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Modifications are only allowed by the owner of the product.")
+    else:
+        if(product.dict()["owner_id"]!=user_id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Users are only allowed to create products for themselves.")
+        try:
+            new_or_updated_product = productsDB.put(product.dict())
+        except Exception as ex:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ex))
+        return new_or_updated_product
