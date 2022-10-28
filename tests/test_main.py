@@ -61,6 +61,20 @@ def test_get_single_product_endpoint_returns_product_for_user_by_id():
     assert response.json() == expected_product
 
 
+def test_get_single_product_endpoint_fails_for_not_existing_product():
+    #ARRANGE
+    client = TestClient(app)
+    TEST_USER_ID = config("TEST_USER_ID")
+    expected_error = {
+        "detail": "Product not found."
+    }
+    #ACT
+    response = client.get(f"/products/not_existing_id", headers={"userId":TEST_USER_ID})
+    #ASSERT
+    assert response.status_code == 404
+    assert response.json() == expected_error
+
+
 def test_post_products_endpoint():
     #ARRANGE
     client = TestClient(app)
