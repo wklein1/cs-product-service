@@ -100,6 +100,8 @@ async def post_product_by_user(product: product_models.ProductModel, user_id:str
 )
 async def delete_product_by_id(product_id, user_id: str = Header(alias="userId")):
     product_to_delete = productsDB.get(product_id)
+    if product_to_delete is None:
+        return
     if product_to_delete["owner_id"] == user_id:
         productsDB.delete(product_id)
         return
