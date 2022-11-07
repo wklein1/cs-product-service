@@ -6,13 +6,13 @@ class ProductModel(CustomBaseModel):
     name: str
     description: str
     component_ids: list[str]
-    price: float
 
     def __getitem__(self, item):
         return getattr(self, item)
 
 class ProductResponseModel(ProductModel):
     key: str = Field(alias="productId")
+    price: float
 
 class ProductRequestModel(ProductModel):
     key: str = Field(alias="productId")

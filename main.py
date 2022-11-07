@@ -3,6 +3,7 @@ from deta import Deta, Base
 from fastapi.middleware.cors import CORSMiddleware
 from decouple import config
 from models import product_models,error_models
+import requests
 import uuid
 
 PROJECT_KEY = config("PROJECT_KEY")
@@ -25,6 +26,14 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+
+def calculate_product_price(component_ids:list[str]) -> float:
+    components_price_sum = 0
+    for componentId in component_ids:
+        component_price_response = requests.get(f"https://cs-components-service.deta.dev/components/{componentId}/price")
+        components_price_sum = components_price_sum + component_price_response.json()["price"]
+    return components_price_sum
 
 
 @app.get(
@@ -83,6 +92,7 @@ async def post_product_by_user(product: product_models.ProductModel, user_id:str
     try:
         new_product = product.dict()
         new_product["key"] = str(uuid.uuid1())
+        new_product["price"] = calculate_product_price(new_product["component_ids"])
         productsDB.insert(new_product)
     except Exception as ex:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=ex)
@@ -128,7 +138,9 @@ async def put_product_by_user(product: product_models.ProductRequestModel, user_
         if(product.dict()["owner_id"]!=user_id):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Users are only allowed to create products for themselves.")
         try:
-            new_or_updated_product = productsDB.put(product.dict())
+            new_or_updated_product = product.dict()
+            new_or_updated_product["price"] = calculate_product_price(component_ids=new_or_updated_product["component_ids"])
+            productsDB.put(new_or_updated_product)
         except Exception as ex:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ex))
         return new_or_updated_product
@@ -157,7 +169,9 @@ async def patch_product_by_id(product: product_models.ProductModel, product_id, 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Modifications are only allowed by the owner of the product.")
     else:
         try:
-            updated_product = productsDB.update(product.dict(),product_id)
+            updated_product = product.dict()
+            updated_product["price"] = calculate_product_price(component_ids=updated_product["component_ids"])
+            productsDB.update(updated_product,product_id)
         except Exception as ex:
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ex))
         
