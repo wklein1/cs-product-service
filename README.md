@@ -6,6 +6,8 @@ Product service deploy: https://cs-product-service.deta.dev/docs
 
 A fullstack application project with microservice architecture backend. (Work in progress)
 
+Tech Stack: React, FastApi, Deta (noSQL DB)
+
 Frontend: https://github.com/kbe-aw2022/frontend (deploy: https://kbe-aw2022-frontend.netlify.app/)
 
 Microservices:
