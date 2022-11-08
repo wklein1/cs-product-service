@@ -4,9 +4,9 @@
 
 Product service deploy: https://cs-product-service.deta.dev/docs
 
-A fullstack application project with microservice architecture backend.
+A fullstack application project with microservice architecture backend. (Work in progress)
 
-Frontend: https://github.com/kbe-aw2022/frontend
+Frontend: https://github.com/kbe-aw2022/frontend (deploy: https://kbe-aw2022-frontend.netlify.app/)
 
 Microservices:
 
@@ -15,6 +15,8 @@ Api gateway: https://github.com/wklein1/cs-api-gateway
 Identity provider: https://github.com/wklein1/cs-identity-provider
 
 Components service: https://github.com/wklein1/cs-components-service
+
+Product service: https://github.com/wklein1/cs-product-service (You are here)
 
 Favorites service: https://github.com/wklein1/cs-favorites-service
 
